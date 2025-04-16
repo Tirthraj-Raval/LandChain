@@ -24,7 +24,7 @@ contract LandNFT is ERC721URIStorage {
 
     // Function to list land for sale
     function listLandForSale(uint256 tokenId, uint256 price) public {
-        require(ownerOf(tokenId) == msg.sender, "You must be the owner of the land.");
+        require(ownerOf(tokenId) == msg.sender, "Message from Registar Office : You are not the owner of the land.");
         require(price > 0, "Price must be greater than zero.");
         
         landPrices[tokenId] = price;

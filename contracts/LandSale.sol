@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract LandNFT is ERC721URIStorage {
+contract LandSale is ERC721URIStorage {
     address public owner;
     uint256 private _tokenIdCounter; // A simple counter for token IDs
     mapping(uint256 => uint256) public landPrices; // Mapping from tokenId to price in wei
