@@ -1,11 +1,13 @@
 const LandNFT = artifacts.require("LandNFT");
 const LandRegistry = artifacts.require("LandRegistry");
 
-module.exports = async function (deployer) {
-  // Deploy LandNFT contract first
-  await deployer.deploy(LandNFT);
+module.exports = async function (deployer, network, accounts) {
+  const taxDepartment = accounts[2]; // hardcode tax department as per your logic
+
+  // 1. Deploy LandNFT with tax department address
+  await deployer.deploy(LandNFT, taxDepartment);
   const landNFTInstance = await LandNFT.deployed();
 
-  // Deploy LandRegistry contract and link it with LandNFT
+  // 2. Deploy LandRegistry and link it with LandNFT address
   await deployer.deploy(LandRegistry, landNFTInstance.address);
 };

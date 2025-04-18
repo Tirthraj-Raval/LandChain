@@ -13,9 +13,9 @@ contract LandNFT is ERC721URIStorage {
     mapping(uint256 => uint256) public landTaxes; // stores 10% tax per listing
     mapping(uint256 => uint256) public netPrices; // total price (price + tax)
 
-    constructor() ERC721("LandNFT", "LND") {
+    constructor(address _taxDepartment) ERC721("LandNFT", "LND") {
         tokenIdCounter = 0;
-        taxDepartment = msg.sender; // deployer is tax dept for now
+        taxDepartment = _taxDepartment; // 👈 set account[2] at deploy time
     }
 
     // Function to mint land NFT
@@ -82,8 +82,8 @@ contract LandNFT is ERC721URIStorage {
         require(sentToSeller, "Payment to seller failed");
 
         // 2. Pay tax department
-        // (bool sentToTax, ) = payable(taxDepartment).call{value: tax}("");
-        // require(sentToTax, "Payment to tax department failed");
+        (bool sentToTax, ) = payable(taxDepartment).call{value: tax}("");
+        require(sentToTax, "Payment to tax department failed");
 
         // 3. Transfer ownership of NFT
         _transfer(seller, msg.sender, tokenId);
