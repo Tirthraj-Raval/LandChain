@@ -8,14 +8,43 @@ contract LandNFT is ERC721URIStorage {
     mapping(uint256 => uint256) public landPrices;
     mapping(uint256 => address) public landSellers;
 
+    mapping(uint256 => bool) public isVerified;
+
     // new change for tax
     address public taxDepartment; // tax authority
     mapping(uint256 => uint256) public landTaxes; // stores 10% tax per listing
     mapping(uint256 => uint256) public netPrices; // total price (price + tax)
 
-    constructor(address _taxDepartment) ERC721("LandNFT", "LND") {
+    constructor(
+        address _taxDepartment,
+        address _registrarOffice
+    ) ERC721("LandNFT", "LND") {
         tokenIdCounter = 0;
         taxDepartment = _taxDepartment; // 👈 set account[2] at deploy time
+        registrarOffice = _registrarOffice; // 👈 set account[3] at deploy time
+    }
+
+    address public registrarOffice; // like taxDepartment
+
+    modifier onlyRegistrar() {
+        require(
+            msg.sender == registrarOffice,
+            "Only Registrar can perform this action."
+        );
+        _;
+    }
+
+    event LandPurchaseDetails(
+        uint256 tokenId,
+        uint256 price,
+        uint256 tax,
+        uint256 netPrice,
+        address buyer
+    );
+
+    function verifyLand(uint256 tokenId) public onlyRegistrar {
+        require(_exists(tokenId), "Land does not exist.");
+        isVerified[tokenId] = true;
     }
 
     // Function to mint land NFT
@@ -32,11 +61,9 @@ contract LandNFT is ERC721URIStorage {
 
     // Function to list land for sale
     function listLandForSale(uint256 tokenId, uint256 price) public {
-        require(
-            ownerOf(tokenId) == msg.sender,
-            "Message from Registrar Office: You are not the owner of the land."
-        );
+        require(ownerOf(tokenId) == msg.sender, "You are not the owner.");
         require(price > 0, "Price must be greater than zero.");
+        require(isVerified[tokenId], "Land is not verified by the Registrar.");
 
         landPrices[tokenId] = price;
         landSellers[tokenId] = msg.sender;
@@ -46,14 +73,6 @@ contract LandNFT is ERC721URIStorage {
         landTaxes[tokenId] = tax;
         netPrices[tokenId] = price + tax; // total amount to be paid by buyer
     }
-
-    event LandPurchaseDetails(
-        uint256 tokenId,
-        uint256 price,
-        uint256 tax,
-        uint256 netPrice,
-        address buyer
-    );
 
     // Function to buy land
     function buyLand(uint256 tokenId) public payable {
