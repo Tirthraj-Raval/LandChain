@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.0",
+    "@pinata/sdk": "^2.1.0",
     "ipfs-http-client": "^60.0.1",
-    "web3": "^4.16.0"
+    "web3": "^4.16.0",
+    "web3.storage": "^4.5.5"
   }
 }
