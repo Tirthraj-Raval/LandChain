@@ -20,8 +20,8 @@ contract LandNFT is ERC721URIStorage {
         address _registrarOffice
     ) ERC721("LandNFT", "LND") {
         tokenIdCounter = 0;
-        taxDepartment = _taxDepartment; // 👈 set account[2] at deploy time
-        registrarOffice = _registrarOffice; // 👈 set account[3] at deploy time
+        taxDepartment = _taxDepartment; // set account[2] at deploy time
+        registrarOffice = _registrarOffice; //  set account[3] at deploy time
     }
 
     address public registrarOffice; // like taxDepartment
@@ -34,17 +34,26 @@ contract LandNFT is ERC721URIStorage {
         _;
     }
 
+    event LandMinted(
+        address indexed owner,
+        uint256 tokenId,
+        string tokenURI,
+        bool isVerified
+    );
+
     event LandPurchaseDetails(
         uint256 tokenId,
         uint256 price,
         uint256 tax,
         uint256 netPrice,
-        address buyer
+        address buyer,
+        address seller
     );
 
     function verifyLand(uint256 tokenId) public onlyRegistrar {
         require(_exists(tokenId), "Land does not exist.");
         isVerified[tokenId] = true;
+        emit LandMinted(ownerOf(tokenId), tokenId, tokenURI(tokenId), true);
     }
 
     // Function to mint land NFT
@@ -56,6 +65,10 @@ contract LandNFT is ERC721URIStorage {
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
         tokenIdCounter += 1;
+
+        isVerified[tokenId] = false; // Explicitly mark as unverified on mint
+
+        emit LandMinted(to, tokenId, tokenURI, false); // Emit with isVerified = false
         return tokenId;
     }
 
@@ -88,13 +101,20 @@ contract LandNFT is ERC721URIStorage {
         );
         require(seller != msg.sender, "You cannot buy your own land.");
 
-        // 🔒 Ensure contract balance is sufficient before transferring
+        // Ensure contract balance is sufficient before transferring
         require(
             address(this).balance >= netPrice,
             "Contract has insufficient balance."
         );
 
-        emit LandPurchaseDetails(tokenId, price, tax, netPrice, msg.sender);
+        emit LandPurchaseDetails(
+            tokenId,
+            price,
+            tax,
+            netPrice,
+            msg.sender,
+            seller
+        );
 
         // 1. Pay seller only the land price
         (bool sentToSeller, ) = payable(seller).call{value: price}("");

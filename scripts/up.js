@@ -29,13 +29,13 @@ async function uploadDocument(filePath) {
 
   try {
     const result = await pinata.pinFileToIPFS(readableStream, options);
-    console.log("✅ IPFS Hash:", result.IpfsHash);
+    console.log("IPFS Hash:", result.IpfsHash);
     console.log(
       "🌐 View File: https://gateway.pinata.cloud/ipfs/" + result.IpfsHash
     );
     return result.IpfsHash;
   } catch (err) {
-    console.error("❌ Upload failed:", err);
+    console.error("Upload failed:", err);
     throw err;
   }
 }
